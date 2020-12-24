@@ -18,9 +18,9 @@ set(BIN_SRC_FILES
     src/main.cpp
     src/hardware_layer.cpp 
     src/glueVars.cpp 
-    POUS.c 
-    STD_CONF.c
-    STD_RESSOURCE.c)
+    src/POUS.c 
+    src/STD_CONF.c
+    src/STD_RESSOURCE.c)
 
 add_executable(plcruntime ${BIN_SRC_FILES})
 
