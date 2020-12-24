@@ -1,7 +1,9 @@
 
+#include "POUS.h"
+
 void HELLO_WORLD_init__(HELLO_WORLD *data__, BOOL retain) {
-  __INIT_VAR(data__->MY_BUTTON,__BOOL_LITERAL(FALSE),retain)
-  __INIT_VAR(data__->LAMP,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->MY_BUTTON,__BOOL_LITERAL(FALSE),retain);
+  __INIT_VAR(data__->LAMP,__BOOL_LITERAL(FALSE),retain);
   TOF_init__(&data__->TOF0,retain);
 }
 
