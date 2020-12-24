@@ -1,6 +1,7 @@
 # Minimum Cmake verison required
 cmake_minimum_required(VERSION 3.0.0)
 
+
 # Project name 
 project(plcruntime VERSION 0.1.0)
 
@@ -30,7 +31,7 @@ target_compile_options(plcruntime PRIVATE
 
 # Define the Include directories 
 # <BUILD_INTERFACE> for those directories that are needed for compilation.
-target_include_directories(binary_name PUBLIC
+target_include_directories(plcruntime PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
