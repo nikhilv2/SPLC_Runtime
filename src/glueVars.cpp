@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------------------
 
 #include "iec_std_lib.h"
+#include "LOCATED_VARIABLES.h"
 
 TIME __CURRENT_TIME;
 extern unsigned long long common_ticktime__;
@@ -58,9 +59,8 @@ IEC_LINT *lint_memory[BUFFER_SIZE];
 
 void glueVars()
 {
-	bool_input[0][0] = __IX0_0;
-	bool_input[0][1] = __IX0_1;
-	bool_output[0][0] = __QX0_0;
+	bool_input[0][0] = my_button;
+	bool_output[0][0] = lamp;
 }
 
 void updateTime()

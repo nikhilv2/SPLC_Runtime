@@ -141,7 +141,8 @@ void handleSpecialFunctions()
 }
 
 int main(int argc,char **argv)
-{
+{   
+    time_t start_time;
     //======================================================
     //                 PLC INITIALIZATION
     //======================================================
@@ -189,13 +190,11 @@ int main(int argc,char **argv)
 		//attached to the user variables
 		glueVars();
         
-		updateBuffersIn(); //read input image
-
+		updateBuffersIn(); 
         handleSpecialFunctions();
 		config_run__(__tick++); // execute plc program logic
 
-		updateBuffersOut(); //write output image
-        
+		updateBuffersOut(); 
 		updateTime();
 
 		sleep_until(&timer_start, common_ticktime__);
@@ -205,9 +204,9 @@ int main(int argc,char **argv)
 	//             SHUTTING DOWN OPENPLC RUNTIME
 	//======================================================
     //pthread_join(interactive_thread, NULL);
+
     printf("Disabling outputs\n");
     disableOutputs();
-    //updateCustomOut();
     updateBuffersOut();
 	finalizeHardware();
     printf("Shutting down OpenPLC Runtime...\n");

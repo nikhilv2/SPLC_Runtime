@@ -52,7 +52,7 @@ extern IEC_LINT *special_functions[BUFFER_SIZE];
 extern unsigned long long common_ticktime__;
 
 //----------------------------------------------------------------------
-//FUNCTION PROTOTYPES
+//      FUNCTION PROTOTYPES
 //----------------------------------------------------------------------
 
 //MatIEC Compiler
