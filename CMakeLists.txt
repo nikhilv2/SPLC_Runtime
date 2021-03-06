@@ -7,6 +7,8 @@ project(plcruntime VERSION 0.1.0)
 # Global Install Directories
 include(GNUInstallDirs)
 
+add_subdirectory(src/glueGen)
+
 # ----------------------------------
 #    Section for compiling 1 binary 
 # ----------------------------------
@@ -41,5 +43,4 @@ target_link_libraries(plcruntime PUBLIC -lm -lrt -lpthread)
 # ----------------------------------
 #    End Section for binary
 # ----------------------------------
-# If you have multiple binaries in a folder 
-# the add more of these sections and change binary_name
+
