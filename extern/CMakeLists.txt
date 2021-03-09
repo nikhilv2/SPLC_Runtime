@@ -7,6 +7,8 @@ project(plcruntime VERSION 0.1.0)
 # Global Install Directories
 include(GNUInstallDirs)
 
+add_subdirectory(src/glueGen)
+
 # ----------------------------------
 #    Section for compiling 1 binary 
 # ----------------------------------
@@ -14,9 +16,10 @@ include(GNUInstallDirs)
 
 # List all the files for compiling one binary
 set(BIN_SRC_FILES
-    src/main.c
-    src/hardware_layer.c
-    src/glueVars.c 
+    src/main.cpp
+    src/hardware_layer.c 
+    src/glueVars.c
+    src/POUS.c 
     src/STD_CONF.c
     src/STD_RESSOURCE.c)
 
@@ -32,15 +35,13 @@ target_compile_options(plcruntime PRIVATE
 target_include_directories(plcruntime PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern/matiec_src/lib/C/>    
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern/matiec_src/lib/C/>
     )
 
 # Link to ShunyaInterfaces
-target_link_libraries(plcruntime PUBLIC siCore siYaml siPeripheral siConn siCloud siIiot siDash siAlerts siFunctions)
+target_link_libraries(plcruntime PUBLIC siCore siYaml siPeripheral siConn siCloud siIiot siDash siAlerts)
 # If you have any more external libraries to link then link here 
 target_link_libraries(plcruntime PUBLIC -lm -lrt -lpthread)
 # ----------------------------------
 #    End Section for binary
 # ----------------------------------
-# If you have multiple binaries in a folder 
-# the add more of these sections and change binary_name

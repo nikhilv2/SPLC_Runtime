@@ -8,6 +8,7 @@
         "type_traits": "c",
         "utility": "c",
         "datastructure.h": "c",
-        "located_variables.h": "c"
+        "located_variables.h": "c",
+        "shunyainterfaces.h": "c"
     }
 }

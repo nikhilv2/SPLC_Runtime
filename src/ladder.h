@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 //Internal buffers for I/O and memory. These buffers are defined in the
 //auto-generated glueVars.cpp file
