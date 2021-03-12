@@ -38,9 +38,9 @@ IEC_LINT *special_functions[BUFFER_SIZE];
 
 void glueVars()
 {
-	bool_input[0][0] = __IX0_0;
-	bool_input[0][1] = __IX0_1;
-	bool_output[0][0] = __QX0_0;
+	bool_input[1][4] = __IX1_4;
+	bool_input[1][5] = __IX1_5;
+	bool_output[1][2] = __QX1_2;
 }
 
 void updateTime()

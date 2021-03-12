@@ -5,33 +5,33 @@
 
 #include "iec_std_lib.h"
 
-// RESOURCE STD_RESSOURCE
+// RESOURCE RES0
 
 extern unsigned long long common_ticktime__;
 
 #include "accessor.h"
 #include "POUS.h"
 
-#include "STD_CONF.h"
+#include "Config0.h"
 
 #include "POUS.c"
 
-BOOL TASKMAIN;
-MY_PROGRAM STD_RESSOURCE__INST0;
-#define INST0 STD_RESSOURCE__INST0
+BOOL TASK0;
+PROGRAM0 RES0__INSTANCE0;
+#define INSTANCE0 RES0__INSTANCE0
 
-void STD_RESSOURCE_init__(void) {
+void RES0_init__(void) {
   BOOL retain;
   retain = 0;
   
-  TASKMAIN = __BOOL_LITERAL(FALSE);
-  MY_PROGRAM_init__(&INST0,retain);
+  TASK0 = __BOOL_LITERAL(FALSE);
+  PROGRAM0_init__(&INSTANCE0,retain);
 }
 
-void STD_RESSOURCE_run__(unsigned long tick) {
-  TASKMAIN = !(tick % 1);
-  if (TASKMAIN) {
-    MY_PROGRAM_body__(&INST0);
+void RES0_run__(unsigned long tick) {
+  TASK0 = !(tick % 1);
+  if (TASK0) {
+    PROGRAM0_body__(&INSTANCE0);
   }
 }
 
