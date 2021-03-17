@@ -9,21 +9,21 @@
 
 #include "POUS.h"
 
-// CONFIGURATION STD_CONF
+// CONFIGURATION CONFIG0
 
-void STD_RESSOURCE_init__(void);
+void RES0_init__(void);
 
 void config_init__(void) {
   BOOL retain;
   retain = 0;
   
-  STD_RESSOURCE_init__();
+  RES0_init__();
 }
 
-void STD_RESSOURCE_run__(unsigned long tick);
+void RES0_run__(unsigned long tick);
 
 void config_run__(unsigned long tick) {
-  STD_RESSOURCE_run__(tick);
+  RES0_run__(tick);
 }
-unsigned long long common_ticktime__ = 50000000ULL * 1ULL; /*ns*/
-unsigned long greatest_tick_count__ = (unsigned long)0UL; /*tick*/
+unsigned long long common_ticktime__ = 20000000ULL; /*ns*/
+unsigned long greatest_tick_count__ = 0UL; /*tick*/

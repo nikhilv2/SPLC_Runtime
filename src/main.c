@@ -145,6 +145,7 @@ int main(int argc,char **argv)
     //======================================================
     //                 PLC INITIALIZATION
     //======================================================
+    time_t start_time;
     tzset();
     time(&start_time);
     config_init__();
