@@ -83,5 +83,4 @@ add_custom_target(genglue DEPENDS glueGen.txt)
 # ----------------------------------
 #    End Section for binary
 # ----------------------------------
-# If you have multiple binaries in a folder 
-# the add more of these sections and change binary_name
+
