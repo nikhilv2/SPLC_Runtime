@@ -92,3 +92,65 @@ void updateBuffersOut()
         }
     }
 }
+
+void updateModbusServerIn(modbusServerObj *obj)
+{
+    /* Update Modbus Input bits */
+    for(int index = obj->mb_mapping->start_input_bits; index < obj->mb_mapping->nb_input_bits; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            modbusSrvSetRegisters(obj, MODBUS_INPUT_COILS, index, *bool_input[index/8][index%8]);
+        }        
+    }
+
+    /* Update Modbus Analog Input */
+    for(int index = obj->mb_mapping->start_input_registers; index < obj->mb_mapping->nb_input_registers; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            modbusSrvSetRegisters(obj, MODBUS_INPUT_REG, index, *int_input[index/8][index%8]);
+        }        
+    }
+
+}
+
+void updateModbusServerOutWR(modbusServerObj *obj)
+{
+
+    /* Update Modbus Output bits */
+    for(int index = obj->mb_mapping->start_bits; index < obj->mb_mapping->nb_bits; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            modbusSrvSetRegisters(obj, MODBUS_OUTPUT_COILS, index, *bool_output[index/8][index%8]);
+        }        
+    }
+
+    /* Update Modbus Analog Output */
+    for(int index = obj->mb_mapping->start_input_registers; index < obj->mb_mapping->nb_input_registers; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            modbusSrvSetRegisters(obj, MODBUS_HOLDING_REG, index, *int_output[index/8][index%8]);
+        }        
+    }
+
+}
+
+void updateModbusServerOutRD(modbusServerObj *obj)
+{
+
+    /* Update Modbus Output bits */
+    for(int index = obj->mb_mapping->start_bits; index < obj->mb_mapping->nb_bits; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            *bool_output[index/8][index%8] = modbusSrvGetRegisters(obj, MODBUS_OUTPUT_COILS, index);
+        }        
+    }
+
+    /* Update Modbus Analog Output */
+    for(int index = obj->mb_mapping->start_input_registers; index < obj->mb_mapping->nb_input_registers; index++)
+    {
+        if (bool_input[index/8][index%8] != NULL) {
+            *int_output[index/8][index%8] = modbusSrvGetRegisters(obj, MODBUS_HOLDING_REG, index);
+        }        
+    }
+
+}

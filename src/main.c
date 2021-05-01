@@ -1,26 +1,8 @@
-//-----------------------------------------------------------------------------
-// Copyright 2018 Thiago Alves
-// This file is part of the OpenPLC Software Stack.
-//
-// OpenPLC is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// OpenPLC is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with OpenPLC.  If not, see <http://www.gnu.org/licenses/>.
-//------
-//
-// This is the main file for the OpenPLC. It contains the initialization
-// procedures for the hardware, network and the main loop
-// Thiago Alves, Jun 2018
-//-----------------------------------------------------------------------------
-
+/**
+ * @file main.c
+ * @brief PLC runtime for shunya OS.
+ * 
+ */
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
@@ -32,6 +14,11 @@
 
 #include "iec_types.h"
 #include "ladder.h"
+#include "log.h"
+
+#include <si/shunyaInterfaces.h>
+#include <si/modbus_server.h>
+#include <signal.h>
 
 #define OPLC_CYCLE          50000000
 
@@ -43,14 +30,21 @@ IEC_LINT cycle_counter = 0;
 
 unsigned long __tick = 0;
 pthread_mutex_t bufferLock; //mutex for the internal buffers
-//pthread_mutex_t logLock; //mutex for the internal log
 uint8_t run_openplc = 1; //Variable to control OpenPLC Runtime execution
 
+static modbusServerObj modbusServer;
+
 //-----------------------------------------------------------------------------
-// Helper function - Makes the running thread sleep for the ammount of time
-// in milliseconds
+// Helper function - 
 //-----------------------------------------------------------------------------
-void sleep_until(struct timespec *ts, int delay)
+
+/**
+ * @brief Sleep for the ammount of time in milliseconds
+ * 
+ * @param ts timer
+ * @param delay delay in milliseconds
+ */
+void delay_msec(struct timespec *ts, int delay)
 {
     ts->tv_nsec += delay;
     if(ts->tv_nsec >= 1000*1000*1000)
@@ -59,18 +53,6 @@ void sleep_until(struct timespec *ts, int delay)
         ts->tv_sec++;
     }
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, ts,  NULL);
-}
-
-//-----------------------------------------------------------------------------
-// Helper function - Makes the running thread sleep for the ammount of time
-// in milliseconds
-//-----------------------------------------------------------------------------
-void sleepms(int milliseconds)
-{
-	struct timespec ts;
-	ts.tv_sec = milliseconds / 1000;
-	ts.tv_nsec = (milliseconds % 1000) * 1000000;
-	nanosleep(&ts, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -114,6 +96,44 @@ void disableOutputs()
     }
 }
 
+void initializeModbusServer(modbusServerObj *obj)
+{
+    int rc;
+    /* Set Modbus server Settings */
+    modbusServer.set.isSettingVerified = true;
+    modbusServer.set.type = SI_MODBUS_SRV_TYPE_TCP;
+    modbusServer.set.slaveAddress = 9;
+    modbusServer.set.port = 9595;
+    modbusServer.set.device[0] = '\0';
+    modbusServer.set.baudrate = 9600;
+    /* Modbus Server Register Map settings */
+    modbusServer.set.startAddrOutputCoil = 0;
+    modbusServer.set.numOutputCoilReg = 800;
+    modbusServer.set.startAddrInputCoil = 10000; 
+    modbusServer.set.numInputCoilReg = 800;
+    modbusServer.set.startAddrInputReg = 30000;      
+    modbusServer.set.numInputReg = 1024;
+    modbusServer.set.startAddrHoldingReg = 40000;  
+    modbusServer.set.numHoldingReg = 2048;
+
+    log_info("Initializing the Modbus Server");
+    /* Initialize the Modbus Slave/Server*/
+    rc = modbusSrvInit(&modbusServer);
+    if (rc < 0) {
+        log_error("Failed to initialize the Modbus Server/Slave");
+    } else {
+        log_info("Init success\n");
+    }
+
+    log_info("Starting the Modbus Server");
+    rc = modbusSrvStart(&modbusServer);
+    if (rc < 0) {
+        log_error("Failed to start the Modbus Server/Slave");
+    } else {
+        log_info("Start success\n");
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Special Functions
 //-----------------------------------------------------------------------------
@@ -140,11 +160,56 @@ void handleSpecialFunctions()
     
 }
 
+// Define the function to be called when ctrl-c (SIGINT) signal is sent to process
+void signal_callback_handler(int signum)
+{
+    int rc = -1;
+    
+    log_trace("Caught signal %d\n",signum);
+
+    /* --- Cleanup and close up stuff here --- */
+
+    /* ------ Modbus Server Cleanup ------- */
+    /* Stop Modbus server */
+    log_info("Stopping Modbus server\n");
+    rc = modbusSrvStop(&modbusServer);
+    if (rc < 0) {
+        log_warn("Failed to stop Modbus Server\n");
+    } else {
+        log_info("Stop success\n");
+    }
+    /* Destroy the Modbus server */
+    log_info("Destroying Modbus server  variables and memory\n");
+    rc = modbusSrvDestroy(&modbusServer);
+    if (rc < 0) {
+        log_warn("Failed to Destroy Modbus Server\n");
+    } else {
+        log_info("Destroy success\n");
+    }
+
+    log_info("Disabling outputs\n");
+    disableOutputs();
+    //updateCustomOut();
+    updateBuffersOut();
+	finalizeHardware();
+    log_info("Shutting down Runtime...\n");
+    // Terminate program
+    exit(signum);
+}
+
 int main(int argc,char **argv)
 {
-    //======================================================
-    //                 PLC INITIALIZATION
-    //======================================================
+    signal(SIGINT, signal_callback_handler);
+    /* Start Logging */
+    log_set_level(LOG_TRACE);
+
+    /* Set log to quite mode i.e does not print to stderr */
+    //log_set_quiet(true);
+
+    /*======================================================
+     *                 PLC INITIALIZATION
+     *======================================================
+     */
     time_t start_time;
     tzset();
     time(&start_time);
@@ -154,6 +219,7 @@ int main(int argc,char **argv)
     //              HARDWARE INITIALIZATION
     //======================================================
     initializeHardware();
+    initializeModbusServer(&modbusServer);
     updateBuffersIn();
     updateBuffersOut();
 
@@ -163,27 +229,28 @@ int main(int argc,char **argv)
     // Set our thread to real time priority
     struct sched_param sp;
     sp.sched_priority = 30;
-    printf("Setting main thread priority to RT\n");
+    log_info("Setting main thread priority to RT\n");
     if(pthread_setschedparam(pthread_self(), SCHED_FIFO, &sp))
     {
-        printf("WARNING: Failed to set main thread to real-time priority\n");
+        log_warn("Failed to set main thread to real-time priority\n");
     }
 
     // Lock memory to ensure no swapping is done.
-    printf("Locking main thread memory\n");
+    log_info("Locking main thread memory\n");
     if(mlockall(MCL_FUTURE|MCL_CURRENT))
     {
-        printf("WARNING: Failed to lock memory\n");
+        log_warn("Failed to lock memory\n");
     }
 
 	//gets the starting point for the clock
-	printf("Getting current time\n");
+	log_info("Getting current time\n");
 	struct timespec timer_start;
 	clock_gettime(CLOCK_MONOTONIC, &timer_start);
 
 	//======================================================
 	//                    MAIN LOOP
 	//======================================================
+    log_info("Running PLC runtime ..");
 	while(run_openplc)
 	{
 		//make sure the buffer pointers are correct and
@@ -192,25 +259,32 @@ int main(int argc,char **argv)
         
 		updateBuffersIn(); //read input image
 
+        updateModbusServerIn(&modbusServer);
+
         handleSpecialFunctions();
+
 		config_run__(__tick++); // execute plc program logic
 
-		updateBuffersOut(); //write output image
+        updateModbusServerOutRD(&modbusServer);
+		
+        updateBuffersOut(); //write output image
         
-		updateTime();
+        updateModbusServerOutWR(&modbusServer);
+		
+        updateTime();
 
-		sleep_until(&timer_start, common_ticktime__);
+		delay_msec(&timer_start, common_ticktime__);
 	}
     
     //======================================================
 	//             SHUTTING DOWN OPENPLC RUNTIME
 	//======================================================
     //pthread_join(interactive_thread, NULL);
-    printf("Disabling outputs\n");
+    log_info("Disabling outputs\n");
     disableOutputs();
     //updateCustomOut();
     updateBuffersOut();
 	finalizeHardware();
-    printf("Shutting down OpenPLC Runtime...\n");
+    log_info("Shutting down Runtime...\n");
     exit(0);
 }

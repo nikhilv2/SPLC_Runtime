@@ -60,19 +60,21 @@ extern unsigned long long common_ticktime__;
 void config_run__(unsigned long tick);
 void config_init__(void);
 
-//glueVars.cpp
+//glueVars.c
 void glueVars();
 void updateTime();
 
-//hardware_layer.cpp
+//hardware_layer.c
 void initializeHardware();
 void finalizeHardware();
 void updateBuffersIn();
 void updateBuffersOut();
+void updateModbusServerIn(modbusServerObj *obj);
+void updateModbusServerOutWR(modbusServerObj *obj);
+void updateModbusServerOutRD(modbusServerObj *obj);
 
-//main.cpp
-void sleep_until(struct timespec *ts, int delay);
-void sleepms(int milliseconds);
+//main.c
+void delay_msec(struct timespec *ts, int delay);
 bool pinNotPresent(int *ignored_vector, int vector_size, int pinNumber);
 extern uint8_t run_openplc;
 void handleSpecialFunctions();
